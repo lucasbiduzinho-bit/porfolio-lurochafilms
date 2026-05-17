@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="pt-br">
 <head>
@@ -441,6 +442,29 @@
   #tw .seg button{padding:8px 6px;background:#0c0c0c;font-size:11px;color:var(--ink-dim);transition:background .2s,color .2s}
   #tw .seg button.on{background:var(--accent);color:#0b0b0b;font-weight:600}
 
+  /* ============ VIDEO MODAL ============ */
+  .video-modal{
+    position:fixed;inset:0;z-index:100;display:none;
+    align-items:center;justify-content:center;
+    padding:32px;background:rgba(0,0,0,.82);
+    backdrop-filter:blur(14px);
+  }
+  .video-modal.on{display:flex}
+  .video-modal .box{
+    position:relative;width:min(1120px,94vw);
+    aspect-ratio:16/9;background:#050505;
+    border:1px solid var(--line-strong);
+    box-shadow:0 28px 80px rgba(0,0,0,.65);
+  }
+  .video-modal iframe{width:100%;height:100%;border:0;display:block}
+  .video-modal .close{
+    position:absolute;right:0;top:-48px;
+    width:38px;height:38px;border:1px solid var(--line-strong);
+    border-radius:50%;background:#0b0b0b;color:var(--ink);
+    font-size:22px;line-height:1;cursor:pointer;
+  }
+  .video-modal .close:hover{background:var(--accent);color:#0b0b0b;border-color:var(--accent)}
+
   /* Theme variants */
   body.theme-paper{--bg:#f4ede1;--ink:#1a1814;--ink-dim:#5a5347;--line:rgba(26,24,20,.14);--line-strong:rgba(26,24,20,.32)}
   body.theme-paper .case-thumb .label,
@@ -466,6 +490,8 @@
     .carousel-stage{grid-template-columns:1fr;min-height:auto}
     .carousel-meta{min-height:auto;border-right:none;border-bottom:1px solid var(--line);padding:32px 28px}
     .carousel-viewport{min-height:480px;padding:24px}
+    .video-modal{padding:18px}
+    .video-modal .box{width:94vw}
     .carousel-meta .num{font-size:64px}
     section.case{grid-template-columns:1fr;gap:32px;padding:60px 0}
     section.case .meta .num{font-size:60px}
@@ -573,7 +599,7 @@
     <div class="body">
       <div class="case-thumb" data-vid="qeFQkLG4Dz4">
         <div class="img" style="background-image:url(https://img.youtube.com/vi/qeFQkLG4Dz4/maxresdefault.jpg)"></div>
-        <span class="label">01 / featured · click to play on YouTube</span>
+        <span class="label">01 / featured · click to play</span>
         <div class="play"><div class="triangle"></div></div>
         <div class="caption-bottom">
           <span class="title">Hillside Estate — Cinematic Tour</span>
@@ -614,7 +640,7 @@
     <div class="body">
       <div class="case-thumb" data-vid="8tmp2gJgAr0">
         <div class="img" style="background-image:url(https://img.youtube.com/vi/8tmp2gJgAr0/maxresdefault.jpg)"></div>
-        <span class="label">02 / featured · click to play on YouTube</span>
+        <span class="label">02 / featured · click to play</span>
         <div class="play"><div class="triangle"></div></div>
         <div class="caption-bottom">
           <span class="title">Property Tour — Franca SP</span>
@@ -655,7 +681,7 @@
     <div class="body">
       <div class="case-thumb" data-vid="1Ynvebvo87M">
         <div class="img" style="background-image:url(https://img.youtube.com/vi/1Ynvebvo87M/maxresdefault.jpg)"></div>
-        <span class="label">03 / featured · click to play on YouTube</span>
+        <span class="label">03 / featured · click to play</span>
         <div class="play"><div class="triangle"></div></div>
         <div class="caption-bottom">
           <span class="title">Listing Reel — Instagram</span>
@@ -831,6 +857,14 @@
 
 </div>
 
+<!-- ============ VIDEO MODAL ============ -->
+<div class="video-modal" id="videoModal" aria-hidden="true">
+  <div class="box" role="dialog" aria-modal="true" aria-label="Portfolio video player">
+    <button class="close" id="videoClose" aria-label="Close video">×</button>
+    <iframe id="videoFrame" title="Portfolio video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+  </div>
+</div>
+
 <!-- ============ TWEAKS PANEL ============ -->
 <div id="tw">
   <h6><span>Tweaks · Lu Rocha</span><span class="x" id="twClose">×</span></h6>
@@ -932,8 +966,26 @@ const WORKS = [
 <!-- ============ APP ============ -->
 <script>
 (function(){
-  // ---------- Open YouTube in new tab (preview sandbox blocks embeds) ----------
-  function openVideo(id){ window.open('https://www.youtube.com/watch?v='+id, '_blank', 'noopener'); }
+  // ---------- Play YouTube inside the page ----------
+  const videoModal = document.getElementById('videoModal');
+  const videoFrame = document.getElementById('videoFrame');
+  const videoClose = document.getElementById('videoClose');
+
+  function closeVideo(){
+    videoModal.classList.remove('on');
+    videoModal.setAttribute('aria-hidden', 'true');
+    videoFrame.src = '';
+  }
+
+  function openVideo(id){
+    videoFrame.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+    videoModal.classList.add('on');
+    videoModal.setAttribute('aria-hidden', 'false');
+  }
+
+  videoClose.addEventListener('click', closeVideo);
+  videoModal.addEventListener('click', e=>{ if(e.target === videoModal) closeVideo(); });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeVideo(); });
 
   // ---------- Build catalogue grid (non-featured-first 3, or rest) ----------
   // Featured = first 3 used as cases. Catalogue = remaining 9.
